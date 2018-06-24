@@ -1,3 +1,4 @@
+# this file was recreated by git37 to support staking deposits of POS coins
 module Worker
   class DepositCoin
 
@@ -15,12 +16,63 @@ module Worker
         raw.symbolize_keys!
         deposit_eth!(channel, txid, 1, raw)
       else
-        raw  = get_raw channel, txid
-        raw[:details].each_with_index do |detail, i|
-          detail.symbolize_keys!
-          deposit!(channel, txid, i, raw, detail)
-        end
+        raw  = get_raw(channel, txid)
+        raw.symbolize_keys!
+        deposit_address, txout = get_deposit_address(raw)
+        Rails.logger.info "Deposit address: #{deposit_address}, txout #{txout}"
+        deposit!(channel, txid, txout, raw, deposit_address)
       end
+    end
+
+    def deposit!(channel, txid, txout, raw, deposit_address)
+
+      ActiveRecord::Base.transaction do
+        unless PaymentAddress.where(currency: channel.currency_obj.id, address: deposit_address).first
+          Rails.logger.info "Deposit address not found, skip. txid: #{txid}, txout: #{txout}, address: #{deposit_address}, amount: #{raw[:amount]}, fee: #{raw[:fee]} "
+          return
+        end
+
+        fee = 0
+        unless raw[:fee].nil?
+          fee = raw[:fee]
+        end
+
+        amount_after_fees = fee + raw[:amount]
+        Rails.logger.info "Trax Details: txid: #{txid}, txout: #{txout}, address: #{deposit_address}, fee: #{fee}, amount#{ raw[:amount]} amount_after_fees: #{amount_after_fees}"
+        if(amount_after_fees < 0)
+          Rails.logger.info "No deposit. Probably send. txid: #{txid}, txout: #{txout}, address: #{deposit_address}, amount: #{amount_after_fees}"
+          return
+        end
+
+        Rails.logger.info "OK - Before database. txid: #{txid}, txout: #{txout}, address: #{deposit_address}, amount: #{amount_after_fees}"
+
+        # ??? return if PaymentTransaction::Normal.where(txid: txid, txout: txout).first
+
+        tx = PaymentTransaction::Normal.create! \
+        txid: txid,
+        txout: txout,
+        address: deposit_address,
+        amount: amount_after_fees,
+        confirmations: raw[:confirmations],
+        receive_at: Time.at(raw[:timereceived]).to_datetime,
+        currency: channel.currency
+
+        deposit = channel.kls.create! \
+        payment_transaction_id: tx.id,
+        txid: tx.txid,
+        txout: tx.txout,
+        amount: tx.amount,
+        member: tx.member,
+        account: tx.account,
+        currency: tx.currency,
+        confirmations: tx.confirmations
+
+        deposit.submit!
+      end
+    rescue
+      Rails.logger.error "Failed to deposit: #{$!}"
+      Rails.logger.error "txid: #{txid}, txout: #{txout}"
+      Rails.logger.error $!.backtrace.join("\n")
     end
 
     def deposit_eth!(channel, txid, txout, raw)
@@ -51,49 +103,11 @@ module Worker
         confirmations: tx.confirmations
 
         deposit.submit!
-        deposit.accept! 
+        deposit.accept!
       end
     rescue
       Rails.logger.error "Failed to deposit: #{$!}"
       Rails.logger.error "txid: #{txid}, txout: #{txout}, detail: #{raw.inspect}"
-      Rails.logger.error $!.backtrace.join("\n")
-    end
-
-    def deposit!(channel, txid, txout, raw, detail)
-      return if detail[:account] != "payment" || detail[:category] != "receive"
-
-      ActiveRecord::Base.transaction do
-        unless PaymentAddress.where(currency: channel.currency_obj.id, address: detail[:address]).first
-          Rails.logger.info "Deposit address not found, skip. txid: #{txid}, txout: #{txout}, address: #{detail[:address]}, amount: #{detail[:amount]}"
-          return
-        end
-
-        return if PaymentTransaction::Normal.where(txid: txid, txout: txout).first
-
-        tx = PaymentTransaction::Normal.create! \
-        txid: txid,
-        txout: txout,
-        address: detail[:address],
-        amount: detail[:amount].to_s.to_d,
-        confirmations: raw[:confirmations],
-        receive_at: Time.at(raw[:timereceived]).to_datetime,
-        currency: channel.currency
-
-        deposit = channel.kls.create! \
-        payment_transaction_id: tx.id,
-        txid: tx.txid,
-        txout: tx.txout,
-        amount: tx.amount,
-        member: tx.member,
-        account: tx.account,
-        currency: tx.currency,
-        confirmations: tx.confirmations
-
-        deposit.submit!
-      end
-    rescue
-      Rails.logger.error "Failed to deposit: #{$!}"
-      Rails.logger.error "txid: #{txid}, txout: #{txout}, detail: #{detail.inspect}"
       Rails.logger.error $!.backtrace.join("\n")
     end
 
@@ -103,6 +117,17 @@ module Worker
 
     def get_raw_eth(txid)
       CoinRPC["eth"].eth_getTransactionByHash(txid)
+    end
+
+    def get_deposit_address(raw)
+      raw[:details].each_with_index do |detail, i|
+        detail.symbolize_keys!
+        Rails.logger.info "get_deposit_address: account: #{detail[:account]}, categoty: #{detail[:category]}, address: #{detail[:address]}, txout: #{i}"
+        if (detail[:account] == "payment" && detail[:category] == "receive")
+          return detail[:address], i
+        end
+      end
+      return "", 0
     end
   end
 end
