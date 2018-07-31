@@ -1,0 +1,11 @@
+- unless @one_sikrets.empty?
+  .panel.panel-primary
+    .panel-heading: span = t('.one')
+    = render partial: 'table', locals: {sikrets: @one_sikrets}
+- unless @all_sikrets.empty?
+  .panel.panel-success
+    .panel-heading: span = t('.all')
+    = render partial: 'table', locals: {sikrets: @all_sikrets}
+
+- if @all_sikrets.empty? and @one_sikrets.empty?
+  h3.text-info.text-center = t('.empty')

@@ -1,0 +1,31 @@
+.row
+  .col-xs-12
+    .panel.panel-primary
+      .panel-heading
+        span = t('.withdraw', sn: @sikret.id)
+      .panel-body
+        = description_for :withdraw do
+          = item_for @sikret, :id
+          = item_for @sikret, :created_at
+          = item_for @sikret, :aasm_state_text
+          hr.split
+          = item_for @sikret.member, :name
+          = item_for @sikret, :fund_extra
+          = item_for @sikret, :fund_uid do
+            span = @sikret.fund_uid.truncate(22)
+          = item_for @sikret, :amount
+          hr.split
+          = item_for @sikret, :remark
+          hr.split
+          ul.list-inline.pull-right
+            - if @sikret.may_reject?
+              li
+                = link_to t('.reject'), url_for([:admin, @sikret]), class: 'btn btn-danger', method: 'DELETE', confirm: t('.reject_confirm')
+            - if @sikret.may_process?
+              li
+                = link_to t('.process'), url_for([:admin, @sikret]), class: 'btn btn-primary', method: 'PATCH'
+
+  .col-xs-12
+    = render partial: 'shared/admin/member', locals: {member: @sikret.member}
+    = render partial: 'shared/admin/account', locals: {account: @sikret.account}
+

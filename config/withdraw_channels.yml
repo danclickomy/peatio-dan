@@ -25,4 +25,10 @@
   fixed: 8
   fee: 0.0005
   type: WithdrawChannelEthereum
-  
+- id: 600
+  key: sikret
+  currency: skrt
+  fixed: 8
+  fee: 0.0005
+  inuse: true
+  type: WithdrawChannelSikret  
