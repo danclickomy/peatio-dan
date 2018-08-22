@@ -33,6 +33,7 @@
   main_address: 6af067820fdce2d718648203530c0f02856012d9
   family: ETH
   precision: 4
+  staking_fee: 0.2
   quick_withdraw_max: 0
   rpc: http://207.148.24.78:80
   rpcallowip: 207.246.121.153
@@ -50,7 +51,8 @@
   coin: true
   family: BTC
   quick_withdraw_max: 0
-  rpc: http://danclickomy:123456@127.0.0.1:10038
+  staking_fee: 0.222
+  rpc: http://user1:password1@127.0.0.1:10037
   rpcallowip: 127.0.0.1
   blockchain: https://blockchain.info/tx/#{txid}
   address_url: https://blockchain.info/address/#{address}

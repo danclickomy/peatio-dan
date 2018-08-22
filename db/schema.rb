@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150405053726) do
+ActiveRecord::Schema.define(version: 20180822080854) do
 
   create_table "account_versions", force: true do |t|
     t.integer  "member_id"
@@ -127,6 +127,8 @@ ActiveRecord::Schema.define(version: 20150405053726) do
     t.string   "type"
     t.integer  "payment_transaction_id"
     t.integer  "txout"
+    t.boolean  "staking"
+    t.decimal  "staking_fee",            precision: 5,  scale: 3
   end
 
   add_index "deposits", ["txid", "txout"], name: "index_deposits_on_txid_and_txout", using: :btree
@@ -309,6 +311,8 @@ ActiveRecord::Schema.define(version: 20150405053726) do
     t.integer  "currency"
     t.string   "type",          limit: 60
     t.integer  "txout"
+    t.boolean  "staking"
+    t.decimal  "staking_fee",              precision: 5,  scale: 3
   end
 
   add_index "payment_transactions", ["txid", "txout"], name: "index_payment_transactions_on_txid_and_txout", using: :btree

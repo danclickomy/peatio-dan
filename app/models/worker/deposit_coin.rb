@@ -18,17 +18,17 @@ module Worker
       else
         raw  = get_raw(channel, txid)
         raw.symbolize_keys!
-        deposit_address, txout = get_deposit_address(raw)
+        deposit_address, txout, staking = get_deposit_address(raw)
         Rails.logger.info "Deposit address: #{deposit_address}, txout #{txout}"
-        deposit!(channel, txid, txout, raw, deposit_address)
+        deposit!(channel, txid, txout, raw, deposit_address, staking)
       end
     end
 
-    def deposit!(channel, txid, txout, raw, deposit_address)
+    def deposit!(channel, txid, txout, raw, deposit_address, staking)
 
       ActiveRecord::Base.transaction do
         unless PaymentAddress.where(currency: channel.currency_obj.id, address: deposit_address).first
-          Rails.logger.info "Deposit address not found, skip. txid: #{txid}, txout: #{txout}, address: #{deposit_address}, amount: #{raw[:amount]}, fee: #{raw[:fee]} "
+          Rails.logger.info "Deposit address not found, skip. txid: #{txid}, txout: #{txout}, address: #{deposit_address}, amount: #{raw[:amount]}, fee: #{raw[:fee]}, staking: #{staking} "
           return
         end
 
@@ -38,15 +38,20 @@ module Worker
         end
 
         amount_after_fees = fee + raw[:amount]
-        Rails.logger.info "Trax Details: txid: #{txid}, txout: #{txout}, address: #{deposit_address}, fee: #{fee}, amount#{ raw[:amount]} amount_after_fees: #{amount_after_fees}"
+        Rails.logger.info "Trax Details: txid: #{txid}, txout: #{txout}, address: #{deposit_address}, fee: #{fee}, amount#{ raw[:amount]} amount_after_fees: #{amount_after_fees}, staking: #{staking}"
         if(amount_after_fees < 0)
-          Rails.logger.info "No deposit. Probably send. txid: #{txid}, txout: #{txout}, address: #{deposit_address}, amount: #{amount_after_fees}"
+          Rails.logger.info "No deposit. Probably send. txid: #{txid}, txout: #{txout}, address: #{deposit_address}, amount: #{amount_after_fees}, staking: #{staking}"
           return
         end
 
-        Rails.logger.info "OK - Before database. txid: #{txid}, txout: #{txout}, address: #{deposit_address}, amount: #{amount_after_fees}"
+        Rails.logger.info "OK - Before database. txid: #{txid}, txout: #{txout}, address: #{deposit_address}, amount: #{amount_after_fees}, staking: #{staking}, "
 
         # ??? return if PaymentTransaction::Normal.where(txid: txid, txout: txout).first
+        if channel.currency_obj.staking_fee
+          staking_fee = channel.currency_obj.staking_fee
+        else 
+          staking_fee = 0
+        end
 
         tx = PaymentTransaction::Normal.create! \
         txid: txid,
@@ -55,7 +60,9 @@ module Worker
         amount: amount_after_fees,
         confirmations: raw[:confirmations],
         receive_at: Time.at(raw[:timereceived]).to_datetime,
-        currency: channel.currency
+        currency: channel.currency,
+        staking: staking,
+        staking_fee: staking_fee
 
         deposit = channel.kls.create! \
         payment_transaction_id: tx.id,
@@ -65,7 +72,10 @@ module Worker
         member: tx.member,
         account: tx.account,
         currency: tx.currency,
-        confirmations: tx.confirmations
+        confirmations: tx.confirmations,
+        staking: staking,
+        staking_fee: staking_fee
+
 
         deposit.submit!
       end
@@ -120,14 +130,19 @@ module Worker
     end
 
     def get_deposit_address(raw)
-      raw[:details].each_with_index do |detail, i|
+      staking = false
+      Rails.logger.info "raw details length: #{raw[:details].length}"
+      if raw[:details].length > 1
+        staking = true
+      end
+	  raw[:details].each_with_index do |detail, i|
         detail.symbolize_keys!
         Rails.logger.info "get_deposit_address: account: #{detail[:account]}, categoty: #{detail[:category]}, address: #{detail[:address]}, txout: #{i}"
         if (detail[:account] == "payment" && detail[:category] == "receive")
-          return detail[:address], i
+          return detail[:address], i, staking
         end
       end
-      return "", 0
+      return "", 0, staking
     end
   end
 end
