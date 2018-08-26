@@ -51,7 +51,7 @@
   coin: true
   family: BTC
   quick_withdraw_max: 0
-  staking_fee: 0.222
+  staking_fee: 0.5
   rpc: http://user1:password1@127.0.0.1:10037
   rpcallowip: 127.0.0.1
   blockchain: https://blockchain.info/tx/#{txid}

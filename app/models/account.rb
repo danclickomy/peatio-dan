@@ -51,12 +51,12 @@ class Account < ActiveRecord::Base
 
   def plus_funds(amount, fee: ZERO, reason: nil, ref: nil)
     (amount <= ZERO or fee > amount) and raise AccountError, "cannot add funds (amount: #{amount})"
-    change_balance_and_locked amount, 0
+    change_balance_and_locked amount - fee, 0
   end
 
   def sub_funds(amount, fee: ZERO, reason: nil, ref: nil)
     (amount <= ZERO or amount > self.balance) and raise AccountError, "cannot subtract funds (amount: #{amount})"
-    change_balance_and_locked -amount, 0
+    change_balance_and_locked -amount + fee, 0
   end
 
   def lock_funds(amount, reason: nil, ref: nil)
@@ -81,7 +81,7 @@ class Account < ActiveRecord::Base
       opts ||= {}
       fee = opts[:fee] || ZERO
       reason = opts[:reason] || Account::UNKNOWN
-
+      
       attributes = { fun: fun,
                      fee: fee,
                      reason: reason,

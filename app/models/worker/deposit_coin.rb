@@ -75,7 +75,7 @@ module Worker
         confirmations: tx.confirmations,
         staking: staking,
         staking_fee: staking_fee
-
+        
 
         deposit.submit!
       end
