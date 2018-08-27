@@ -101,7 +101,7 @@ class Deposit < ActiveRecord::Base
 
   private
   def do
-    account.lock!.plus_funds amount, fee: channel.currency_obj.staking_fee * amount, reason: Account::DEPOSIT, ref: self
+    account.lock!.plus_funds amount, fee: self.staking_fee * amount, reason: Account::DEPOSIT, ref: self
   end
 
   def send_mail

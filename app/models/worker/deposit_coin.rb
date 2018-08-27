@@ -47,11 +47,13 @@ module Worker
         Rails.logger.info "OK - Before database. txid: #{txid}, txout: #{txout}, address: #{deposit_address}, amount: #{amount_after_fees}, staking: #{staking}, "
 
         # ??? return if PaymentTransaction::Normal.where(txid: txid, txout: txout).first
-        if channel.currency_obj.staking_fee
+        if staking
           staking_fee = channel.currency_obj.staking_fee
         else 
           staking_fee = 0
         end
+
+        fee = 0
 
         tx = PaymentTransaction::Normal.create! \
         txid: txid,
@@ -74,7 +76,8 @@ module Worker
         currency: tx.currency,
         confirmations: tx.confirmations,
         staking: staking,
-        staking_fee: staking_fee
+        staking_fee: staking_fee,
+        fee: fee
         
 
         deposit.submit!
