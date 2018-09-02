@@ -25,7 +25,7 @@ module Admin
       can :manage, ::Withdraws::Bank
       can :manage, ::Withdraws::Satoshi
       can :manage, ::Withdraws::Ether 
-      can :manage, ::Withdraws::Satoshi
+      can :manage, ::Withdraws::Sikret
 
     end
   end

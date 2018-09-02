@@ -4,6 +4,7 @@ module Authentications
 
     def new
       @identity = Identity.new(email: current_user.email)
+      @identity.referred_by = params[:ref]
     end
 
     def create

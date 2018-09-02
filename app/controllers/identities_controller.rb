@@ -3,6 +3,7 @@ class IdentitiesController < ApplicationController
 
   def new
     @identity = env['omniauth.identity'] || Identity.new
+    $my_ref_id = params[:ref]
   end
 
   def edit
@@ -31,7 +32,9 @@ class IdentitiesController < ApplicationController
   end
 
   private
+
   def identity_params
     params.required(:identity).permit(:password, :password_confirmation)
   end
+
 end

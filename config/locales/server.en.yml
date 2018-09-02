@@ -486,6 +486,13 @@ en:
       latency: 1 confirmation
       transfer: Manual
       go: Deposit
+    sikret:
+      key: sikret
+      title: Sikret Deposits
+      intro: Deposit Sikret from your own wallet address to Peatio account
+      latency: 1 confirmation
+      transfer: Manual
+      go: Deposit
   deposits/bank:
     aasm_state:
       submitting: Submitting
@@ -607,6 +614,21 @@ en:
           notice: Withdrawal request successfully submitted. Use the info below to
             complete the bank transfer.
       satoshis:
+        destroy:
+          notice: Withdraw been canceled, frozen balance has returned to your account
+        update:
+          notice: Withdraw request is submit successful, we will process it as soon
+            as possible
+          alert_two_factor: Two-Factor Authentication error
+        new:
+          submit: Submit
+          allin: All-In
+          fund_source_label: Label
+          manage_fund_source: Manage Fund Source
+        create:
+          notice: Withdrawal request successfully submitted. Use the info below to
+            complete the bank transfer.
+      sikrets:
         destroy:
           notice: Withdraw been canceled, frozen balance has returned to your account
         update:
@@ -1303,6 +1325,20 @@ en:
           succeed_confirm: Process withdrawal?
           reject_confirm: Reject withdrawal?
           withdraw: Withdrawals
+      sikrets:
+        index:
+          one: Pending withdrawals
+          all: Last 24 hours
+          empty: No data
+        show:
+          process: Accepted
+          succeed: Withdraw
+          reject: Reject
+          succeed_confirm: Process withdrawal?
+          reject_confirm: Reject withdrawal?
+          withdraw: Withdrawals
+        update:
+          notice: Withdraw confirmed
   deposits/satoshi:
     aasm_state:
       submitted: Submitted
@@ -1583,6 +1619,7 @@ en:
     getstart: Get Start
     assets: Solvency
     history: History
+    affiliate_program: Affiliate Program
     order_history: Order History
     trade_history: Trade History
     account_history: Account History
@@ -1906,6 +1943,13 @@ en:
       key: Ether
       title: Ether Blockchain
       intro: Withdraw Litecoin to your own Ether wallet
+      latency: 30 minutes
+      transfer: Manual
+      go: Withdraw
+    sikret:
+      key: Sikret
+      title: Sikret Blockchain
+      intro: Withdraw Sikret to your own wallet
       latency: 30 minutes
       transfer: Manual
       go: Withdraw

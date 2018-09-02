@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180822080854) do
+ActiveRecord::Schema.define(version: 20180902080018) do
 
   create_table "account_versions", force: true do |t|
     t.integer  "member_id"
@@ -197,6 +197,16 @@ ActiveRecord::Schema.define(version: 20180822080854) do
     t.datetime "updated_at"
   end
 
+  create_table "identity_referrers", force: true do |t|
+    t.integer  "identity_id"
+    t.integer  "my_ref_id"
+    t.integer  "referred_by_identity"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "identity_referrers", ["identity_id"], name: "index_identity_referrers_on_identity_id", using: :btree
+
   create_table "members", force: true do |t|
     t.string   "sn"
     t.string   "display_name"
@@ -338,6 +348,18 @@ ActiveRecord::Schema.define(version: 20180822080854) do
 
   add_index "read_marks", ["member_id"], name: "index_read_marks_on_member_id", using: :btree
   add_index "read_marks", ["readable_type", "readable_id"], name: "index_read_marks_on_readable_type_and_readable_id", using: :btree
+
+  create_table "referrals", force: true do |t|
+    t.string   "url"
+    t.integer  "visitor_count"
+    t.integer  "register_count"
+    t.boolean  "active"
+    t.integer  "identity_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "referrals", ["identity_id"], name: "index_referrals_on_identity_id", using: :btree
 
   create_table "running_accounts", force: true do |t|
     t.integer  "category"

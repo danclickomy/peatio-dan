@@ -14,6 +14,6 @@
     span = x.aasm_state_text
     - if x.may_accept?
       span = ' / '
-      = link_to t('.accept'), url_for([:admin, x]), method: 'PATCH', confirm: t('.accept_confirm$
+      = link_to t('.accept'), url_for([:admin, x]), method: 'PATCH', confirm: t('.accept_confirm')
 
 .pull-right = paginate @sikrets

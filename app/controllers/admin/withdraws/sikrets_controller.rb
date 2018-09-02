@@ -6,7 +6,7 @@ module Admin
       def index
         start_at = DateTime.now.ago(60 * 60 * 24)
         @one_sikrets = @sikrets.with_aasm_state(:accepted).order("id DESC")
-        @all_satoshis = @sikrets.without_aasm_state(:accepted).where('created_at > ?', start_at).order("id DESC")
+        @all_sikrets = @sikrets.without_aasm_state(:accepted).where('created_at > ?', start_at).order("id DESC")
       end
 
       def show

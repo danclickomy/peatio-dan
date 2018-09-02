@@ -15,6 +15,7 @@ Peatio::Application.routes.draw do
     mount MailsViewer::Engine => '/mails'
   end
 
+  get '/affiliate_program' => 'referral#show', :as => :affiliate_program
   get '/signin' => 'sessions#new', :as => :signin
   get '/signup' => 'identities#new', :as => :signup
   get '/signout' => 'sessions#destroy', :as => :signout
