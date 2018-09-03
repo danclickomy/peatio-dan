@@ -3,7 +3,13 @@ class IdentitiesController < ApplicationController
 
   def new
     @identity = env['omniauth.identity'] || Identity.new
-    $my_ref_id = params[:ref]
+
+    unless params[:ref].nil?
+      cookies[:my_ref_id] = {:value => params[:ref], :expires_in => 1.month.from_now}
+    end
+
+    $my_ref_id = cookies[:my_ref_id]
+    increment_visitor_count($my_ref_id)
   end
 
   def edit
@@ -35,6 +41,19 @@ class IdentitiesController < ApplicationController
 
   def identity_params
     params.required(:identity).permit(:password, :password_confirmation)
+  end
+
+  def increment_visitor_count(my_ref_id)
+    begin
+      referred_by_identity = IdentityReferrer.find_by_my_ref_id(my_ref_id).identity_id
+      referral_to_increment = Referral.find_by_identity_id(referred_by_identity)
+
+      referral_to_increment.nil?
+      referral_to_increment.update_attribute(:visitor_count, referral_to_increment.visitor_count + 1)
+
+    rescue
+      return
+    end
   end
 
 end

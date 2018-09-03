@@ -75,3 +75,13 @@ $ ->
   FlashMessageUI.attachTo('.flash-message')
   SmsAuthVerifyUI.attachTo('#edit_sms_auth')
   TwoFactorAuth.attachTo('.two-factor-auth-container')
+
+  @copyUrl = ->
+    copyText = document.getElementById('urlText')
+    copyText.select()
+    document.execCommand 'copy'
+    return
+
+
+
+window['copyUrl'] = copyUrl
