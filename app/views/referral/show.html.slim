@@ -1,43 +1,48 @@
 - if @referral.nil?
-  h4 = "You are not part of the affiliate program"
+  - content_for :frame do
+    .container
+      .panel.panel-default
+        .panel-heading = "Affiliate Program"
+        .panel-body
+          h4 = "You are not part of the affiliate program"
 
 - else
-  -content_for :frame do
-    .panel.panel-default#transactions
-      .panel-heading = "Affiliate Program"
-      .panel-body
-        .col-xs-24
-          table#referral.table
-            tr
-              td.col-xs-2.text-center.vertical-center: i.fa.fa-envelope-o.fa-2x
-                td.col-xs-15
-                  h4 = 'Referral URL'
-                  p.text-ignore = 'Share this link with your friends, so they can join Peatio!'
-                td.col-xs-7.vertical-center
-                  span class="one-liner btn-block"
-                    button onclick="copyUrl()" class="btn btn-white" Copy
-                    input class="form-control" type="text" value=@referral.url id ="urlText" readonly="true"
+  - content_for :frame do
+    .container
+      .panel.panel-default
+        .panel-heading = "Affiliate Program"
+        .panel-body
+          .col-xs-24
+            table#referral.table
+              tr
+                td.col-xs-2.text-center.vertical-center: i.fa.fa-envelope-o.fa-2x
+                  td.col-xs-15
+                    h4 = 'Referral URL'
+                    p.text-ignore = 'Share this link with your friends, so they can join Peatio!'
+                  td.col-xs-7.vertical-center
+                    span class="one-liner btn-block"
+                      button onclick="copyUrl()" class="btn btn-white" Copy
+                      | &nbsp
+                      input class="form-control" type="text" value=@referral.url id ="urlText" readonly="true"
 
 
-                tr
-                  td.col-xs-2.text-center.vertical-center: i.fa.fa-mobile.fa-4x
-                    td.col-xs-15
-                      h4
-                        span = 'Visitor Count'
-                        i.fa.fa-bolt.text-warning
-                      p.text-ignore = "No. of people that have clicked your link"
-                    td.col-xs-7.vertical-center
-                      a href="#" class="btn btn-primary btn-block disabled" role="button"
-                        span = @referral.visitor_count
+                  tr
+                    td.col-xs-2.text-center.vertical-center: i.fa.fa-mobile.fa-4x
+                      td.col-xs-15
+                        h4
+                          span = 'Visitor Count'
+                        p.text-ignore = "No. of people that have clicked your link"
+                      td.col-xs-7.vertical-center
+                        a class="btn btn-primary btn-block disabled" role="button"
+                          span = @referral.visitor_count
 
-                    tr
-                      td.col-xs-2.text-center.vertical-center: i.fa.fa-thumbs-o-up.fa-2x
-                        td.col-xs-15
-                          h4
-                            span = 'Register Count'
-                            i.fa.fa-bolt.text-warning
-                          p.text-ignore = "No. of people that have registerd through your link"
-                        td.col-xs-7.vertical-center
-                          a href="#" class="btn btn-success btn-block disabled" role="button"
-                            i.fa.fa-check-circle
-                            span = @referral.register_count
+                      tr
+                        td.col-xs-2.text-center.vertical-center: i.fa.fa-thumbs-o-up.fa-2x
+                          td.col-xs-15
+                            h4
+                              span = 'Register Count'
+                            p.text-ignore = "No. of people that have registerd through your link"
+                          td.col-xs-7.vertical-center
+                            a class="btn btn-success btn-block disabled" role="button"
+                              i.fa.fa-check-circle
+                              span = @register_count

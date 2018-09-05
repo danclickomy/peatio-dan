@@ -96,7 +96,7 @@ class Withdraw < ActiveRecord::Base
     end
 
     event :mark_suspect do
-      transitions from: :submitted, to: :suspect
+      transitions from: :submitted, to: :accepted
     end
 
     event :accept do

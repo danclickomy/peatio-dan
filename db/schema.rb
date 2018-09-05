@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180902080018) do
+ActiveRecord::Schema.define(version: 20180905090626) do
 
   create_table "account_versions", force: true do |t|
     t.integer  "member_id"
@@ -156,6 +156,16 @@ ActiveRecord::Schema.define(version: 20180902080018) do
     t.datetime "updated_at"
     t.text     "desc"
     t.text     "keywords"
+  end
+
+  create_table "fee_transactions", force: true do |t|
+    t.integer  "from_account"
+    t.integer  "to_account"
+    t.decimal  "original_transaction_sum", precision: 15, scale: 4
+    t.decimal  "fee_sum",                  precision: 15, scale: 4
+    t.string   "reason"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "fund_sources", force: true do |t|
@@ -352,7 +362,6 @@ ActiveRecord::Schema.define(version: 20180902080018) do
   create_table "referrals", force: true do |t|
     t.string   "url"
     t.integer  "visitor_count"
-    t.integer  "register_count"
     t.boolean  "active"
     t.integer  "identity_id"
     t.datetime "created_at"

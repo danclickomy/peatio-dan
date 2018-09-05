@@ -5,11 +5,13 @@ class IdentitiesController < ApplicationController
     @identity = env['omniauth.identity'] || Identity.new
 
     unless params[:ref].nil?
-      cookies[:my_ref_id] = {:value => params[:ref], :expires_in => 1.month.from_now}
+      if cookies[:my_ref_id] != params[:ref]
+        increment_visitor_count(params[:ref])
+      end
+      cookies[:my_ref_id] = {:value => params[:ref], :expires => 1.month.from_now}
     end
 
     $my_ref_id = cookies[:my_ref_id]
-    increment_visitor_count($my_ref_id)
   end
 
   def edit
@@ -54,6 +56,7 @@ class IdentitiesController < ApplicationController
     rescue
       return
     end
+
   end
 
 end

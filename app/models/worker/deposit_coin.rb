@@ -38,13 +38,13 @@ module Worker
         end
 
         amount_after_fees = fee + raw[:amount]
-        Rails.logger.info "Trax Details: txid: #{txid}, txout: #{txout}, address: #{deposit_address}, fee: #{fee}, amount#{ raw[:amount]} amount_after_fees: #{amount_after_fees}, staking: #{staking}"
+        Rails.logger.info "Trax Details: txid: #{txid}, txout: #{txout}, address: #{deposit_address}, fee: #{fee}, amount#{ raw[:amount]} amount_after_fees: #{amount_after_fees}, staking: #{staking}, currency: #{channel.currency}"
         if(amount_after_fees < 0)
-          Rails.logger.info "No deposit. Probably send. txid: #{txid}, txout: #{txout}, address: #{deposit_address}, amount: #{amount_after_fees}, staking: #{staking}"
+          Rails.logger.info "No deposit. Probably send. txid: #{txid}, txout: #{txout}, address: #{deposit_address}, amount: #{amount_after_fees}, staking: #{staking}, currency: #{channel.currency}"
           return
         end
 
-        Rails.logger.info "OK - Before database. txid: #{txid}, txout: #{txout}, address: #{deposit_address}, amount: #{amount_after_fees}, staking: #{staking}, "
+        Rails.logger.info "OK - Before database. txid: #{txid}, txout: #{txout}, address: #{deposit_address}, amount: #{amount_after_fees}, staking: #{staking}, currency: #{channel.currency}"
 
         # ??? return if PaymentTransaction::Normal.where(txid: txid, txout: txout).first
         if staking
@@ -78,7 +78,6 @@ module Worker
         staking: staking,
         staking_fee: staking_fee,
         fee: fee
-        
 
         deposit.submit!
       end

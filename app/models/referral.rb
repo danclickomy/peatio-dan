@@ -4,7 +4,6 @@ class Referral < ActiveRecord::Base
 
   private
   def make_counts_zero
-    self.register_count = 0
     self.visitor_count = 0
   end
 end

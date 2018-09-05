@@ -25,7 +25,7 @@ class Deposit < ActiveRecord::Base
     :member, :currency
   validates_numericality_of :amount, greater_than: 0
 
-  scope :recent, -> { order('id DESC')}
+  scope :recent, -> {order('id DESC')}
 
   after_update :sync_update
   after_create :sync_create
@@ -100,8 +100,29 @@ class Deposit < ActiveRecord::Base
   end
 
   private
+
   def do
-    account.lock!.plus_funds amount, fee: self.staking_fee * amount, reason: Account::DEPOSIT, ref: self
+    total_fee = self.staking_fee * amount
+    account.lock!.plus_funds amount, fee: total_fee, reason: Account::DEPOSIT, ref: self
+
+    unless total_fee == 0
+      staking_fee_account = Account.find(4)
+      staking_fee_account.lock!.plus_funds total_fee * 0.75
+      fee_transaction_admin = FeeTransaction.new(:from_account => account.id, :to_account => staking_fee_account.id, :original_transaction_sum => amount, :fee_sum => total_fee * 0.75)
+      fee_transaction_admin.save!
+
+      my_identity = Identity.find_by_email(Member.find(account.member_id).email)
+      referrer_identity = Identity.find(IdentityReferrer.find_by_identity_id(my_identity.id).referred_by_identity)
+      referrer_member = Member.find_by_email(referrer_identity.email)
+      referrer_account = Account.where(:currency => Currency.find_by_code(self.currency).id).find_by(member_id: referrer_member.id)
+    end
+
+    unless referrer_account.nil?
+      referrer_account.lock!.plus_funds total_fee * 0.25
+      fee_transaction_referrer = FeeTransaction.new(:from_account => account.id, :to_account => referrer_account.id, :original_transaction_sum => amount, :fee_sum => total_fee * 0.25)
+      fee_transaction_referrer.save!
+    end
+
   end
 
   def send_mail
@@ -112,10 +133,10 @@ class Deposit < ActiveRecord::Base
     return true if not member.sms_two_factor.activated?
 
     sms_message = I18n.t('sms.deposit_done', email: member.email,
-                                             currency: currency_text,
-                                             time: I18n.l(Time.now),
-                                             amount: amount,
-                                             balance: account.balance)
+                         currency: currency_text,
+                         time: I18n.l(Time.now),
+                         amount: amount,
+                         balance: account.balance)
 
     AMQPQueue.enqueue(:sms_notification, phone: member.phone_number, message: sms_message)
   end
@@ -131,14 +152,14 @@ class Deposit < ActiveRecord::Base
   end
 
   def sync_update
-    ::Pusher["private-#{member.sn}"].trigger_async('deposits', { type: 'update', id: self.id, attributes: self.changes_attributes_as_json })
+    ::Pusher["private-#{member.sn}"].trigger_async('deposits', {type: 'update', id: self.id, attributes: self.changes_attributes_as_json})
   end
 
   def sync_create
-    ::Pusher["private-#{member.sn}"].trigger_async('deposits', { type: 'create', attributes: self.as_json })
+    ::Pusher["private-#{member.sn}"].trigger_async('deposits', {type: 'create', attributes: self.as_json})
   end
 
   def sync_destroy
-    ::Pusher["private-#{member.sn}"].trigger_async('deposits', { type: 'destroy', id: self.id })
+    ::Pusher["private-#{member.sn}"].trigger_async('deposits', {type: 'destroy', id: self.id})
   end
 end

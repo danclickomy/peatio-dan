@@ -14,23 +14,27 @@
               th = t('.Fee')
               th = t('.Txid')
               th = t('.Origin')
-            - @transactions.each do |transaction|
-              tr 
-                td.type = transaction.type
-                td.updated_at = transaction.updated_at
-                td.currency = transaction.currency
-                - if transaction.staking
-                  td.amount = transaction.amount - transaction.staking_fee * transaction.amount
-                - else
-                  td.amount = transaction.amount
-                td.fee = transaction.fee
-                td.txid = transaction.txid
-                - if transaction.staking
-                   td.origin = "Staking"
-                - else
-                   td.origin ="Deposit"
+              - @transactions.each do |transaction|
+                tr
+                  td.type = transaction.type
+                  td.updated_at = transaction.updated_at
+                  td.currency = transaction.currency
+                  - if transaction.type == "Deposits::Sikret"
+                    - if transaction.staking
+                      td.amount = transaction.amount - transaction.staking_fee * transaction.amount
+                    - else
+                      td.amount = transaction.amount
+                  - else
+                    td.amount = transaction.amount
+                  td.fee = transaction.fee
+                  td.txid = transaction.txid
+                  - if transaction.type == "Deposits::Sikret"
+                    - if transaction.staking
+                      td.origin = "Staking"
+                    - else
+                      td.origin = "Deposit"
 
-                .pull-right
-            = paginate @transactions
+                  .pull-right
+              = paginate @transactions
           
 
