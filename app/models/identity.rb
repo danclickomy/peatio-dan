@@ -46,7 +46,7 @@ class Identity < OmniAuth::Identity::Models::ActiveRecord
 
 
   def create_referral
-    referral_url = "192.168.108.132:3000/signup/?ref=" + self.identity_referrer.my_ref_id.to_s
+    referral_url = ENV['URL_HOST'] + "/signup/?ref=" + self.identity_referrer.my_ref_id.to_s
     new_referral = Referral.new(url: referral_url, active: true, identity_id: self.id)
     new_referral.save
   end

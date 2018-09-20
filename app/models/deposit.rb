@@ -105,22 +105,25 @@ class Deposit < ActiveRecord::Base
     total_fee = self.staking_fee * amount
     account.lock!.plus_funds amount, fee: total_fee, reason: Account::DEPOSIT, ref: self
 
-    unless total_fee == 0
-      staking_fee_account = Account.find(4)
+    if self.staking
+      # Take staking fee and send some to admin account
+      staking_fee_account = Account.find(Currency.find_by_code(self.currency).id)
       staking_fee_account.lock!.plus_funds total_fee * 0.75
       fee_transaction_admin = FeeTransaction.new(:from_account => account.id, :to_account => staking_fee_account.id, :original_transaction_sum => amount, :fee_sum => total_fee * 0.75)
       fee_transaction_admin.save!
 
+      # Find the referrer
       my_identity = Identity.find_by_email(Member.find(account.member_id).email)
       referrer_identity = Identity.find(IdentityReferrer.find_by_identity_id(my_identity.id).referred_by_identity)
       referrer_member = Member.find_by_email(referrer_identity.email)
       referrer_account = Account.where(:currency => Currency.find_by_code(self.currency).id).find_by(member_id: referrer_member.id)
-    end
 
-    unless referrer_account.nil?
-      referrer_account.lock!.plus_funds total_fee * 0.25
-      fee_transaction_referrer = FeeTransaction.new(:from_account => account.id, :to_account => referrer_account.id, :original_transaction_sum => amount, :fee_sum => total_fee * 0.25)
-      fee_transaction_referrer.save!
+      # Send some of the fee to the referrer
+      unless referrer_account.nil?
+        referrer_account.lock!.plus_funds total_fee * 0.25
+        fee_transaction_referrer = FeeTransaction.new(:from_account => account.id, :to_account => referrer_account.id, :original_transaction_sum => amount, :fee_sum => total_fee * 0.25)
+        fee_transaction_referrer.save!
+      end
     end
 
   end
